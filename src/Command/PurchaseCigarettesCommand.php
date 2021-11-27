@@ -2,6 +2,11 @@
 
 namespace App\Command;
 
+use App\Exception\NotEnoughMoney;
+use App\Machine\CigaretteMachine;
+use App\Machine\PurchasedItem;
+use App\Machine\PurchaseTransaction;
+use Throwable;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Input\InputArgument;
@@ -9,7 +14,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**
- * Class CigaretteMachine
+ * Class PurchaseCigarettesCommand
  * @package App\Command
  */
 class PurchaseCigarettesCommand extends Command
@@ -27,30 +32,36 @@ class PurchaseCigarettesCommand extends Command
      * @param InputInterface   $input
      * @param OutputInterface $output
      *
-     * @return int|null|void
+     * @return void
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $itemCount = (int) $input->getArgument('packs');
         $amount = (float) \str_replace(',', '.', $input->getArgument('amount'));
 
+        try {
+            $purchaseTransaction = new PurchaseTransaction();
+            $cigaretteMachine = new CigaretteMachine();
 
-        // $cigaretteMachine = new CigaretteMachine();
-        // ...
+            $purchaseItem = $cigaretteMachine->setPurchasedItem(new PurchasedItem())
+                ->execute($purchaseTransaction->setPaidAmount($amount)->setItemQuantity($itemCount));
 
-        $output->writeln('You bought <info>...</info> packs of cigarettes for <info>...</info>, each for <info>...</info>. ');
-        $output->writeln('Your change is:');
+            $output->writeln(sprintf(
+                'You bought <info>%s</info> packs of cigarettes for <info>%s</info>, each for <info>%s</info>.',
+                $itemCount,
+                $purchaseItem->getTotalAmount(),
+                CigaretteMachine::ITEM_PRICE
+            ));
 
-        $table = new Table($output);
-        $table
-            ->setHeaders(array('Coins', 'Count'))
-            ->setRows(array(
-                // ...
-                array('0.02', '0'),
-                array('0.01', '0'),
-            ))
-        ;
-        $table->render();
+            $output->writeln('Your change is:');
 
+            $table = new Table($output);
+            $table->setHeaders(['Coins', 'Count'])->setRows($purchaseItem->getChange())->render();
+        } catch (NotEnoughMoney $e) {
+            $output->writeln(sprintf('<error>%s</error>', $e->getMessage()));
+        } catch (Throwable $e) {
+            $output->writeln(sprintf('<error>%s</error>', 'Cigarette machine not working'));
+            //log $e
+        }
     }
 }
