@@ -39,6 +39,12 @@ class PurchaseCigarettesCommand extends Command
         $itemCount = (int) $input->getArgument('packs');
         $amount = (float) \str_replace(',', '.', $input->getArgument('amount'));
 
+        if ($itemCount < 1) {
+            $output->writeln('<error>Packs count should be at least 1</error>');
+
+            return;
+        }
+
         try {
             $purchaseTransaction = new PurchaseTransaction();
             $cigaretteMachine = new CigaretteMachine();
