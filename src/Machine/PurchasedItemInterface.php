@@ -9,14 +9,26 @@ namespace App\Machine;
 interface PurchasedItemInterface
 {
     /**
-     * @return integer
+     * @return int
      */
-    public function getItemQuantity();
+    public function getItemQuantity(): int;
+
+    /**
+     * @param int $itemQuantity
+     * @return $this
+     */
+    public function setItemQuantity(int $itemQuantity): self;
 
     /**
      * @return float
      */
-    public function getTotalAmount();
+    public function getTotalAmount(): float;
+
+    /**
+     * @param float $totalAmount
+     * @return $this
+     */
+    public function setTotalAmount(float $totalAmount): self;
 
     /**
      * Returns the change in this format:
@@ -28,5 +40,11 @@ interface PurchasedItemInterface
      *
      * @return array
      */
-    public function getChange();
+    public function getChange(): array;
+
+    /**
+     * @param array $change
+     * @return $this
+     */
+    public function setChange(array $change): self;
 }
